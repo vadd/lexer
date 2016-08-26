@@ -4,13 +4,12 @@ Lexer.defunct = function (chr) {
     throw new Error("Unexpected character at index " + (this.index - 1) + ": " + chr);
 };
 
-function Lexer(defunct) {
+function Lexer(defunct, stateCallback) {
     if (typeof defunct !== "function") defunct = Lexer.defunct;
 
     var tokens = [];
     var rules = [];
     var remove = 0;
-    this.state = 0;
     this.index = 0;
     this.input = "";
 
@@ -38,7 +37,6 @@ function Lexer(defunct) {
 
     this.setInput = function (input) {
         remove = 0;
-        this.state = 0;
         this.index = 0;
         tokens.length = 0;
         this.input = input;
@@ -113,8 +111,7 @@ function Lexer(defunct) {
             var start = rule.start;
             var states = start.length;
 
-            if ((!states || start.indexOf(state) >= 0) ||
-                (state % 2 && states === 1 && !start[0])) {
+            if (stateCallback(start)) {
                 var pattern = rule.pattern;
                 pattern.lastIndex = lastIndex;
                 var result = pattern.exec(input);
